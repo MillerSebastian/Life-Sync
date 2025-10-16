@@ -1,0 +1,27 @@
+/* Estilos básicos para elementos arrastrables */
+.draggable {
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+.dragging {
+  opacity: 0.6;
+  transform: rotate(3deg) scale(1.05);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Efectos para contenedores que reciben elementos arrastrados */
+.drop-zone {
+  transition: all 0.3s ease;
+}
+
+.drop-zone.drag-over {
+  background: var(--background-secondary);
+  border: 2px dashed var(--primary);
+  transform: scale(1.02);
+} 

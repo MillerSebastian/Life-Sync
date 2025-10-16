@@ -1,0 +1,236 @@
+html,
+body,
+#app {
+  min-height: 100vh !important;
+  height: auto !important;
+  width: 100vw !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  background: #f8fafc !important;
+  position: static !important;
+  display: block !important;
+}
+
+:root {
+  --primary: #6366f1;
+  --primary-light: #e0e7ff;
+  --primary-dark: #4338ca;
+  --background-primary: #ffffff;
+  --background-secondary: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+}
+
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* Estilos base para elementos comunes */
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  outline: none;
+}
+
+/* Utilidades */
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+.mb-3 {
+  margin-bottom: 0.75rem;
+}
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mt-0 {
+  margin-top: 0;
+}
+.mt-1 {
+  margin-top: 0.25rem;
+}
+.mt-2 {
+  margin-top: 0.5rem;
+}
+.mt-3 {
+  margin-top: 0.75rem;
+}
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mr-1 {
+  margin-right: 0.25rem;
+}
+.mr-2 {
+  margin-right: 0.5rem;
+}
+.mr-3 {
+  margin-right: 0.75rem;
+}
+
+.ml-1 {
+  margin-left: 0.25rem;
+}
+.ml-2 {
+  margin-left: 0.5rem;
+}
+.ml-3 {
+  margin-left: 0.75rem;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* === Estilos globales para todos los modales (idénticos a Tasks.vue) === */
+.modal-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+.modal-card-head {
+  background: var(--primary);
+  color: white;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+.modal-card-title {
+  color: white;
+}
+.modal-card-body {
+  background: #fff;
+  color: var(--text-primary);
+}
+.modal-card-foot {
+  background: #f8fafc;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+#theme-dark .modal-card {
+  background: #23262f;
+  color: #f1f1f1;
+  border: 1.5px solid #4f8cff;
+  box-shadow: 0 4px 24px rgba(79, 140, 255, 0.1);
+}
+#theme-dark .modal-card-head {
+  background: #1a4d99;
+  color: #f1f1f1;
+  border-bottom: 1px solid #4f8cff;
+}
+#theme-dark .modal-card-title {
+  color: #a3c8ff;
+}
+#theme-dark .modal-card-body {
+  background: #23262f;
+  color: #f1f1f1;
+}
+#theme-dark .modal-card-foot {
+  background: #23262f;
+  border-top: 1px solid #4f8cff;
+}
+#theme-dark .modal-background {
+  background: rgba(24, 26, 32, 0.85) !important;
+}
+
+/* Inputs y placeholders en modales modo dark */
+#theme-dark .modal-card input,
+#theme-dark .modal-card textarea,
+#theme-dark .modal-card select {
+  background: #1a2332;
+  color: #f1f1f1;
+  border: 1.5px solid #4a90e2;
+}
+#theme-dark .modal-card input::placeholder,
+#theme-dark .modal-card textarea::placeholder {
+  color: #4a90e2;
+  opacity: 1;
+}
+#theme-dark .modal-card select {
+  color: #f1f1f1;
+}
+#theme-dark .modal-card input:focus,
+#theme-dark .modal-card textarea:focus,
+#theme-dark .modal-card select:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.15);
+}
+
+#theme-dark .modal-card label.label {
+  color: #fff !important;
+}
+#theme-dark .modal-card-title {
+  color: #fff !important;
+}
+
+/* Border radius uniforme para todos los modales */
+.modal-card {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+.modal-card-head {
+  border-top-left-radius: 16px !important;
+  border-top-right-radius: 16px !important;
+}
+.modal-card-foot {
+  border-bottom-left-radius: 16px !important;
+  border-bottom-right-radius: 16px !important;
+}
