@@ -3,12 +3,13 @@ body,
 #app {
   min-height: 100vh !important;
   height: auto !important;
-  width: 100vw !important;
+  width: 100% !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   background: #f8fafc !important;
   position: static !important;
   display: block !important;
+  color-scheme: light !important;
 }
 
 :root {
@@ -24,6 +25,23 @@ body,
   --warning: #f59e0b;
   --danger: #ef4444;
   --info: #3b82f6;
+  color-scheme: light;
+}
+
+/* Hard override to avoid system auto-darkening on all UA widgets by default */
+html,
+body,
+#app,
+:root {
+  color-scheme: light !important;
+}
+
+/* Activate UA dark widgets only when app dark theme is on */
+#theme-dark,
+#theme-dark *,
+[data-theme="dark"],
+[data-theme="dark"] * {
+  color-scheme: dark !important;
 }
 
 /* Reset básico */
@@ -54,6 +72,20 @@ textarea,
 select {
   font-family: inherit;
   outline: none;
+  background-color: #ffffff;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  accent-color: var(--primary);
+}
+
+/* If OS is dark, still keep UA widgets light unless app dark is active */
+@media (prefers-color-scheme: dark) {
+  :root,
+  html,
+  body,
+  #app {
+    color-scheme: light !important;
+  }
 }
 
 /* Utilidades */
@@ -168,7 +200,13 @@ select {
   background: #23262f;
   color: #f1f1f1;
   border: 1.5px solid #4f8cff;
-  box-shadow: 0 4px 24px rgba(79, 140, 255, 0.1);
+  --shadow-hover: rgba(99, 102, 241, 0.18);
+}
+
+/* When app dark mode is active, allow UA widgets to render dark too */
+#theme-dark,
+[data-theme="dark"] {
+  color-scheme: dark;
 }
 #theme-dark .modal-card-head {
   background: #1a4d99;
