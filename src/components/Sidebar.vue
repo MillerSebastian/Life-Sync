@@ -94,7 +94,7 @@ watch(
 
 <style scoped>
 .sidebar {
-  width: 250px;
+  width: 220px;
   height: 100vh;
   background: var(--primary);
   color: white;

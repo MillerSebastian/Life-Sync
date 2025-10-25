@@ -7,7 +7,9 @@
         class="main-content"
         :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
       >
-        <router-view />
+        <div class="content-container">
+          <router-view />
+        </div>
       </main>
     </div>
   </div>
@@ -31,6 +33,12 @@ const handleSidebarToggle = (collapsed) => {
   min-height: 100vh;
 }
 
+.content-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 .main-wrapper {
   flex: 1;
   display: flex;
@@ -39,11 +47,15 @@ const handleSidebarToggle = (collapsed) => {
 
 .main-content {
   flex: 1;
-  margin-left: 250px;
+  margin-left: 220px;
   background: var(--background-secondary);
   min-width: 0;
   transition: margin-left 0.3s ease;
   padding-top: 72px;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  overflow: visible;
 }
 
 .main-content.sidebar-collapsed {
@@ -55,6 +67,13 @@ const handleSidebarToggle = (collapsed) => {
   .main-content {
     margin-left: 70px;
     padding-top: 72px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 16px;
+  }
+
+  .content-container {
+    max-width: 1000px;
   }
 
   .main-content.sidebar-collapsed {

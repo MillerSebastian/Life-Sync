@@ -970,9 +970,9 @@ onMounted(async () => {
 
 <style scoped>
 .dashboard-summary-section {
-  overflow: scroll;
+  overflow: visible;
   padding: 2rem 0;
-  height: 95vh;
+  min-height: 100%;
   background: var(--background-secondary);
 }
 

@@ -363,8 +363,10 @@ function cambiarTema() {
   const body = document.body;
   if (body.id === "theme-light") {
     body.id = "theme-dark";
+    document.documentElement.setAttribute("data-theme", "dark");
   } else {
     body.id = "theme-light";
+    document.documentElement.setAttribute("data-theme", "light");
   }
 }
 
@@ -885,10 +887,10 @@ const navbarStyle = computed(() => {
   if (window.innerWidth <= 768) {
     return {};
   }
-  const left = props.sidebarCollapsed ? "70px" : "250px";
+  const left = props.sidebarCollapsed ? "70px" : "220px";
   const width = props.sidebarCollapsed
     ? "calc(100% - 70px)"
-    : "calc(100% - 250px)";
+    : "calc(100% - 220px)";
   return {
     left,
     width,
@@ -1022,6 +1024,8 @@ const sendQuickReply = async (notification) => {
   box-shadow: 0 2px 8px var(--shadow);
   padding: 0.75rem 1.5rem;
   border-bottom: 1px solid var(--border);
+  box-sizing: border-box;
+  overflow-x: clip;
 }
 
 .nav-button {

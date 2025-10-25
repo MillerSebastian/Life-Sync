@@ -1522,8 +1522,8 @@ const toggleMealCompletion = async (meal) => {
 
 .meals-page {
   padding: 2rem 0;
-  overflow: scroll;
-  height: 95vh;
+  overflow: visible;
+  min-height: 100%;
   background: var(--background-secondary);
 }
 
