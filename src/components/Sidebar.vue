@@ -11,22 +11,49 @@
     </div>
 
     <nav class="sidebar-nav">
-      <router-link
-        v-for="item in menuItems"
-        :key="item.path"
-        :to="item.path"
-        class="nav-item"
-        :class="{ active: $route.path === item.path }"
-      >
-        <i :class="item.icon"></i>
-        <span v-if="!isCollapsed">{{ item.name }}</span>
-      </router-link>
+      <template v-for="item in menuItems" :key="item.path || item.name">
+        <router-link
+          v-if="!item.disabled"
+          :to="item.path"
+          class="nav-item"
+          :class="{ active: $route.path === item.path }"
+        >
+          <i :class="item.icon"></i>
+          <span v-if="!isCollapsed">{{ item.name }}</span>
+        </router-link>
+        <div
+          v-else
+          class="nav-item disabled has-tooltip"
+          :data-tooltip="item.tooltip || 'Coming soon'"
+          aria-disabled="true"
+          @click.prevent
+        >
+          <i :class="item.icon"></i>
+          <span v-if="!isCollapsed">{{ item.name }}</span>
+        </div>
+      </template>
+
+      <!-- Submenú Comunidad -->
+      <div v-if="isCommunity" class="nav-submenu" :class="{ collapsed: isCollapsed }">
+        <router-link to="/feed" class="nav-subitem" :class="{ active: $route.path === '/feed' }">
+          <i class="bx bx-news"></i>
+          <span v-if="!isCollapsed">Feed</span>
+        </router-link>
+        <router-link to="/chat" class="nav-subitem" :class="{ active: $route.path === '/chat' }">
+          <i class="bx bx-chat"></i>
+          <span v-if="!isCollapsed">Chats</span>
+        </router-link>
+        <router-link to="/friends" class="nav-subitem" :class="{ active: $route.path === '/friends' }">
+          <i class="bx bx-user-check"></i>
+          <span v-if="!isCollapsed">Amigos</span>
+        </router-link>
+      </div>
     </nav>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -90,6 +117,12 @@ watch(
   },
   { immediate: true }
 );
+
+// Mostrar submenú cuando la ruta pertenezca a comunidad
+const isCommunity = computed(() => {
+  const p = router.currentRoute.value.path;
+  return p === "/feed" || p === "/chat" || p === "/friends";
+});
 </script>
 
 <style scoped>
@@ -253,6 +286,33 @@ watch(
 .nav-item span {
   font-size: 14px;
   font-weight: 500;
+}
+
+/* Submenú Comunidad */
+.nav-submenu {
+  margin-top: 8px;
+  padding-left: 12px;
+}
+.nav-submenu.collapsed {
+  padding-left: 0;
+}
+.nav-subitem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  border-radius: 8px;
+  margin: 0 10px 5px 10px;
+}
+.nav-subitem:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.nav-subitem.active {
+  background: var(--accent);
+  color: #fff;
 }
 
 .sidebar-footer {
