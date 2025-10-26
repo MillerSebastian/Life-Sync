@@ -91,6 +91,8 @@ const menuItems = [
     path: "chatIA",
     name: "Lisy IA",
     icon: "bx bx-chat",
+    disabled: true,
+    tooltip: "Coming soon",
   },
   {
     name: "Comunidad",
@@ -261,6 +263,51 @@ const isCommunity = computed(() => {
   margin-bottom: 5px;
 }
 
+/* Estado deshabilitado con tooltip visible */
+.nav-item.disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.has-tooltip {
+  position: relative;
+}
+.has-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -110%);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 2000;
+}
+.has-tooltip::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -4px);
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 1999;
+}
+.has-tooltip:hover::after {
+  opacity: 1;
+}
+.has-tooltip:hover::before {
+  opacity: 1;
+}
+
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.1);
   color: white;
@@ -412,6 +459,13 @@ const isCommunity = computed(() => {
   background: #4f8cff;
   color: #181a20;
   box-shadow: 0 2px 8px rgba(79, 140, 255, 0.15);
+}
+#theme-dark .has-tooltip::after {
+  background: rgba(0, 0, 0, 0.92);
+  color: #fff;
+}
+#theme-dark .has-tooltip::before {
+  border-color: rgba(0, 0, 0, 0.92) transparent transparent transparent;
 }
 #theme-dark .sidebar-footer {
   background: #1a1d23;

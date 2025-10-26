@@ -17,19 +17,24 @@
       >
         <div class="control has-icons-left is-expanded">
           <input
+            ref="searchInput"
             class="input"
             type="text"
             placeholder="Buscar..."
             v-model="searchQuery"
-            @focus="showResults = true"
-            @input="showResults = true"
+            @focus="onSearchFocus"
+            @input="onSearchInput"
             @blur="handleBlur"
           />
           <span class="icon is-left">
             <i class="bx bx-search"></i>
           </span>
         </div>
-        <div v-if="showResults && results.length" class="search-dropdown">
+        <div
+          v-if="showResults && results.length"
+          class="search-dropdown"
+          :style="dropdownStyle"
+        >
           <div
             v-for="(result, idx) in results"
             :key="result.type + result.id + idx"
@@ -53,7 +58,7 @@
     <div class="navbar-menu is-active">
       <div class="navbar-end">
         <div class="navbar-item">
-          <button class="button nav-button" @click="showNotifications = true">
+          <button class="button nav-button" @click="openNotifications">
             <span class="icon">
               <i class="bx bx-bell"></i>
             </span>
@@ -325,10 +330,11 @@
 <script setup>
 import Profile from "@/views/Profile.vue";
 import { getAuth, signOut } from "firebase/auth";
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useSearchStore } from "@/stores/search";
-import { auth, db } from "@/../firebase";
+import { auth, db, database } from "@/../firebase";
+import { ref as rtdbRef, set, onValue } from "firebase/database";
 import {
   doc,
   getDoc,
@@ -358,6 +364,17 @@ const processingNotification = ref(null);
 const searchStore = useSearchStore();
 const searchQuery = ref("");
 const showResults = ref(false);
+const searchInput = ref(null);
+const dropdownLeft = ref(0);
+const dropdownTop = ref(0);
+const dropdownWidth = ref(360);
+const dropdownStyle = computed(() => ({
+  position: 'fixed',
+  left: dropdownLeft.value + 'px',
+  top: dropdownTop.value + 'px',
+  width: dropdownWidth.value + 'px',
+  zIndex: 2000
+}));
 
 function cambiarTema() {
   const body = document.body;
@@ -374,8 +391,45 @@ function handleBlur() {
   setTimeout(() => (showResults.value = false), 200);
 }
 
+function updateDropdownPosition() {
+  const el = searchInput.value;
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  dropdownLeft.value = Math.round(rect.left);
+  dropdownTop.value = Math.round(rect.bottom + 6); // justo debajo del topbar/input
+  dropdownWidth.value = Math.round(rect.width);
+}
+
+function onSearchFocus() {
+  showResults.value = true;
+  nextTick(() => {
+    updateDropdownPosition();
+  });
+}
+
+function onSearchInput() {
+  showResults.value = true;
+  nextTick(() => {
+    updateDropdownPosition();
+  });
+}
+
+onMounted(() => {
+  window.addEventListener('resize', updateDropdownPosition);
+  window.addEventListener('scroll', updateDropdownPosition, true);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateDropdownPosition);
+  window.removeEventListener('scroll', updateDropdownPosition, true);
+});
+
 // Variable para almacenar el unsubscribe del listener
 let notificationsUnsubscribe = null;
+
+// Realtime Database: último momento en que el usuario abrió notificaciones
+const lastOpenedTs = ref(0);
+let lastOpenedUnsub = null;
 
 // Esperar a que el usuario esté autenticado antes de sincronizar
 watch(
@@ -384,12 +438,23 @@ watch(
     if (user) {
       searchStore.syncAll();
       loadNotifications();
+      // Suscribir a RTDB para leer el último momento en que se abrieron
+      if (lastOpenedUnsub) lastOpenedUnsub();
+      const path = rtdbRef(database, `users/${auth.currentUser.uid}/notifications/lastOpened`);
+      lastOpenedUnsub = onValue(path, (snap) => {
+        const val = snap.val();
+        lastOpenedTs.value = typeof val === "number" ? val : 0;
+      });
     } else {
       // Limpiar listener si el usuario se desautentica
       if (notificationsUnsubscribe) {
         notificationsUnsubscribe();
         notificationsUnsubscribe = null;
         notifications.value = [];
+      }
+      if (lastOpenedUnsub) {
+        lastOpenedUnsub();
+        lastOpenedUnsub = null;
       }
     }
   },
@@ -612,9 +677,27 @@ function formatTime(timestamp) {
 
 // Contar notificaciones no leídas
 const unreadNotificationsCount = computed(() => {
-  const count = notifications.value.filter((n) => !n.read).length;
-  return count;
+  // Cuenta como no leídas solo las posteriores a lastOpened
+  const toMillis = (ts) =>
+    ts?.toMillis ? ts.toMillis() : ts?.seconds ? ts.seconds * 1000 : (ts ? new Date(ts).getTime() : 0);
+  return notifications.value.filter((n) => {
+    const created = toMillis(n.createdAt);
+    return !n.read && created > (lastOpenedTs.value || 0);
+  }).length;
 });
+
+// Abrir modal y resetear contador en RTDB
+async function openNotifications() {
+  showNotifications.value = true;
+  if (!auth.currentUser) return;
+  try {
+    const now = Date.now();
+    await set(rtdbRef(database, `users/${auth.currentUser.uid}/notifications/lastOpened`), now);
+    lastOpenedTs.value = now; // efecto inmediato en UI
+  } catch (e) {
+    console.error("Error actualizando lastOpened en RTDB:", e);
+  }
+}
 
 // Borrar notificación
 async function deleteNotification(notificationId) {
@@ -1144,11 +1227,13 @@ const sendQuickReply = async (notification) => {
   background: #fff;
   color: #1e293b;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 4px 16px var(--shadow-hover);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  position: fixed; /* overlay bajo el topbar */
+  max-height: 60vh;
+  overflow: auto;
+  padding: 8px;
 }
-
-/* DARK MODE SOLO PARA EL INPUT Y DROPDOWN DE BÚSQUEDA */
 #theme-dark .top-navbar .input {
   background: #23262f;
   color: #f1f1f1;
