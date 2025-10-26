@@ -1,5 +1,6 @@
 <template>
   <div class="friends-container">
+    <FloatingIcons viewType="friends" />
     <!-- Header con navegación -->
     <div class="friends-header">
       <h2>Mis Amigos</h2>
@@ -181,10 +182,6 @@
               >
             </div>
             <div class="friend-actions">
-              <button class="btn-profile" @click="openUserProfile(friend.uid)">
-                <i class="bx bx-user"></i>
-                Ver Perfil
-              </button>
               <button class="btn-message" @click="sendMessage(friend)">
                 <i class="bx bx-message"></i>
                 Mensaje
@@ -199,6 +196,8 @@
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
+import FloatingIcons from "../components/FloatingIcons.vue";
 import {
   collection,
   query,
@@ -214,6 +213,7 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 
+const router = useRouter();
 const friends = ref([]);
 const pendingRequests = ref([]);
 const sentRequests = ref([]);
@@ -492,14 +492,10 @@ async function cancelRequest(request) {
   }
 }
 
-// Abrir perfil de usuario
-function openUserProfile(uid) {
-  // Implementar navegación al perfil
-}
-
 // Enviar mensaje
 function sendMessage(friend) {
-  // Implementar navegación al chat
+  if (!friend?.uid) return;
+  router.push({ name: "chat", query: { uid: friend.uid } });
 }
 
 // Formatear tiempo
@@ -540,8 +536,10 @@ onMounted(() => {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
   min-height: 100vh;
+  position: relative;
+  z-index: 1;
+  color: var(--text);
 }
 
 .friends-header {
@@ -551,9 +549,8 @@ onMounted(() => {
 
 .friends-header h2 {
   font-size: 2.5rem;
-  color: white;
+  color: var(--text-secondary);
   margin-bottom: 25px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   font-weight: 700;
 }
 
@@ -568,30 +565,30 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 15px 25px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 15px;
-  color: white;
+  padding: 12px 20px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
   position: relative;
-  backdrop-filter: blur(10px);
-  font-size: 1rem;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .nav-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  background: var(--background-secondary);
+  border-color: var(--border);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-hover);
 }
 
 .nav-btn.active {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  background: var(--background-secondary);
+  border-color: var(--border);
+  box-shadow: 0 4px 12px var(--shadow-hover);
 }
 
 .nav-btn i {
@@ -626,18 +623,17 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 25px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 22px;
+  background: var(--background);
+  border-radius: 16px;
+  border: 1px solid var(--border);
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px var(--shadow-hover);
 }
 
 .stat-card i {
@@ -652,24 +648,23 @@ onMounted(() => {
 }
 
 .stat-number {
-  font-size: 2.2rem;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .stat-label {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .friends-content {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--background);
+  border-radius: 16px;
+  border: 1px solid var(--border);
   overflow: hidden;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .section-content {
@@ -677,25 +672,24 @@ onMounted(() => {
 }
 
 .section-content h3 {
-  font-size: 1.8rem;
-  color: white;
-  margin-bottom: 25px;
+  font-size: 1.6rem;
+  color: var(--text);
+  margin-bottom: 20px;
   text-align: center;
   font-weight: 600;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .empty-state {
   text-align: center;
   padding: 80px 20px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
 }
 
 .empty-state i {
   font-size: 5rem;
   margin-bottom: 25px;
-  opacity: 0.6;
-  color: rgba(255, 255, 255, 0.5);
+  opacity: 0.5;
+  color: var(--text-secondary);
 }
 
 .empty-state p {
@@ -722,19 +716,18 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 25px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 22px;
+  background: var(--background);
+  border-radius: 16px;
+  border: 1px solid var(--border);
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .request-card:hover,
 .friend-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px var(--shadow-hover);
 }
 
 .request-avatar,
@@ -744,8 +737,8 @@ onMounted(() => {
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: 3px solid var(--border-light);
+  box-shadow: 0 4px 12px var(--shadow);
 }
 
 .request-avatar img,
@@ -763,25 +756,24 @@ onMounted(() => {
 
 .request-info h4,
 .friend-info h4 {
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   font-weight: 600;
-  color: white;
-  margin-bottom: 8px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  color: var(--text);
+  margin-bottom: 6px;
 }
 
 .request-info p,
 .friend-info p {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
   font-weight: 500;
 }
 
 .request-info small,
 .friend-info small {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  color: var(--secondary);
   font-style: italic;
 }
 
