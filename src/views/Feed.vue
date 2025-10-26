@@ -1,35 +1,25 @@
 <template>
   <div class="feed-layout">
-    <SidebarFeed
-      :user="user"
-      :isSidebarCollapsed="isSidebarCollapsed"
-      :activeSection="activeSection"
-      :pendingRequestsCount="pendingRequestsCount"
-      @toggle-sidebar="toggleSidebar"
-      @update:activeSection="(val) => (activeSection = val)"
-    />
     <div class="feed-main">
-      <Chat v-if="activeSection === 'chat'" />
-      <Friends v-else-if="activeSection === 'friends'" :user="user" />
-      <template v-else>
-        <div class="feed-header">
-          <button class="btn btn-primary" @click="showPostModal = true">
-            Crear publicación
-          </button>
-        </div>
-        <transition name="fade-modal">
-          <div
-            v-if="userProfileUid"
-            class="modal-feed"
-            @click.self="closeUserProfileModal"
-          >
-            <div class="modal-feed-content">
-              <UserProfile
-                :uid="userProfileUid"
-                @close="closeUserProfileModal"
-              />
-            </div>
+      <FloatingIcons viewType="chat" />
+      <div class="feed-header">
+        <button class="btn btn-primary" @click="showPostModal = true">
+          Crear publicación
+        </button>
+      </div>
+      <transition name="fade-modal">
+        <div
+          v-if="userProfileUid"
+          class="modal-feed"
+          @click.self="closeUserProfileModal"
+        >
+          <div class="modal-feed-content">
+            <UserProfile
+              :uid="userProfileUid"
+              @close="closeUserProfileModal"
+            />
           </div>
+        </div>
         </transition>
         <transition name="fade-modal">
           <div v-if="showPostModal" class="modal is-active">
@@ -402,7 +392,6 @@
             </div>
           </div>
         </transition>
-      </template>
     </div>
   </div>
 </template>
@@ -410,9 +399,9 @@
 <script setup>
 import { ref, reactive, onMounted, nextTick } from "vue";
 import NavbarFeed from "../components/NavbarFeed.vue";
-import SidebarFeed from "../components/SidebarFeed.vue";
 import { useRouter } from "vue-router";
 import { auth, db, storage } from "../../firebase";
+import FloatingIcons from "../components/FloatingIcons.vue";
 import {
   collection,
   addDoc,
@@ -436,8 +425,6 @@ import {
 } from "firebase/storage";
 
 import UserProfile from "./UserProfile.vue";
-import Chat from "./Chat.vue";
-import Friends from "./Friends.vue";
 
 const router = useRouter();
 const user = ref({
@@ -457,13 +444,7 @@ const editPostContent = ref("");
 const editingCommentId = ref(null);
 const editCommentContent = ref("");
 const bounceReactionId = ref("");
-const isSidebarCollapsed = ref(false);
-const activeSection = ref("feed");
-const pendingRequestsCount = ref(0);
-
-function toggleSidebar() {
-  isSidebarCollapsed.value = !isSidebarCollapsed.value;
-}
+// Esta vista es standalone (Feed principal)
 
 // Cargar solicitudes de amistad pendientes
 async function loadPendingFriendRequests() {
@@ -832,16 +813,14 @@ function goToUserProfile(uid) {
 </script>
 
 <style scoped>
-html,
-body {
-  overflow: hidden !important;
-  height: 100vh !important;
-}
 .feed-layout {
   display: flex;
-  background: var(--background-secondary);
+  background: transparent;
   min-height: 100vh;
   width: 100%;
+  gap: 16px;
+  box-sizing: border-box;
+  overflow-x: hidden;
   /* No height, no overflow */
 }
 .feed-main {
@@ -849,19 +828,20 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  height: 100vh;
-  background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
+  min-height: 100%;
+  background: transparent;
   box-shadow: none;
   align-items: stretch;
   justify-content: flex-start;
-  padding: 88px 40px 40px 40px;
+  padding: 72px 24px 24px 24px; /* compensar TopNavBar fijo */
   margin: 0;
-  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 .feed-full {
   min-height: 100vh;
-  width: 100vw;
-  max-width: 100vw;
+  width: 100%;
+  max-width: 100%;
   padding: 0;
   margin: 0;
   background: var(--background-secondary, #f8fafc);
@@ -873,11 +853,11 @@ body {
   margin-bottom: 2rem;
   margin-top: 2rem;
   width: 100%;
-  max-width: 600px;
+  max-width: 100%;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding-right: 0.5rem;
+  padding-right: 0;
 }
 .btn-create-post {
   background: var(--primary);
@@ -946,11 +926,11 @@ body {
 }
 .feed-list {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2.5rem;
   width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   /* No max-height, no overflow-y, no height */
 }
 .feed-post {
@@ -964,6 +944,7 @@ body {
   width: 100%;
   margin-bottom: 0;
   box-sizing: border-box;
+  overflow: hidden; /* evita que elementos internos se salgan */
 }
 .feed-post:hover {
   box-shadow: 0 6px 24px var(--shadow-hover, rgba(99, 102, 241, 0.12));
@@ -996,13 +977,15 @@ body {
   gap: 0.5rem;
   margin-bottom: 0.75rem;
   align-items: center;
+  flex-wrap: wrap; /* permitir que los emojis bajen a otra línea */
+  justify-content: flex-start; /* mover un poco hacia la izquierda */
 }
 .reaction-btn {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   cursor: pointer;
-  padding: 0.25rem 0.7rem;
+  padding: 0.25rem 0.55rem; /* ligeramente más compacto */
   border-radius: 50px;
   transition: background 0.2s, box-shadow 0.2s;
   display: flex;
@@ -1051,6 +1034,9 @@ body {
   display: flex;
   gap: 0.5rem;
   margin-top: 0.5rem;
+  align-items: center;
+  width: 100%;
+  overflow: hidden; /* asegura que los hijos no sobrepasen */
 }
 .add-comment-form input {
   flex: 1;
@@ -1058,6 +1044,7 @@ body {
   border: 1px solid var(--border-color, #e2e8f0);
   padding: 0.5rem 0.75rem;
   font-size: 1rem;
+  min-width: 0; /* permitir que el input reduzca sin empujar el botón */
 }
 .btn {
   padding: 0.5rem 1.2rem;
@@ -1213,8 +1200,7 @@ body {
   margin-bottom: 0.3rem;
 }
 .comment-actions {
-  margin-left: 0.5rem;
-  display: inline-flex;
+  margin-left: auto;
   gap: 0.2rem;
 }
 .fade-modal-enter-active,
@@ -1253,10 +1239,10 @@ body {
 }
 
 #theme-dark .feed-layout {
-  background: linear-gradient(135deg, #181a20 0%, #23262f 100%) !important;
+  background: transparent !important;
 }
 #theme-dark .feed-main {
-  background: linear-gradient(135deg, #23262f 0%, #181a20 100%) !important;
+  background: transparent !important;
   color: #f1f1f1;
 }
 /* === INPUTS Y BOTONES ESTILO IACHAT === */
@@ -1288,6 +1274,8 @@ body {
   cursor: pointer;
   transition: all 0.3s;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+  flex: 0 0 auto; /* evita que el botón se comprima extra o rompa layout */
+  white-space: nowrap; /* evita salto de línea del texto del botón */
 }
 .new-post-actions .btn:hover,
 .add-comment-form .btn:hover {
@@ -1477,6 +1465,13 @@ body {
   }
   .feed-post {
     padding: 1rem 0.5rem 0.5rem 0.5rem;
+  }
+  .reaction-btn {
+    font-size: 1.25rem;
+    padding: 0.2rem 0.45rem;
+  }
+  .add-comment-form .btn {
+    padding: 10px 18px; /* botón más compacto en móviles */
   }
 }
 </style>

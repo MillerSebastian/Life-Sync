@@ -66,21 +66,21 @@ const props = defineProps({
 
 <style scoped>
 .feed-sidebar {
-  width: 300px;
+  width: 220px;
   min-width: 70px;
-  max-width: 300px;
+  max-width: 220px;
   background: linear-gradient(180deg, #6366f1 0%, #553c9a 100%);
   color: #fff;
   display: flex;
   flex-direction: column;
   transition: width 0.3s cubic-bezier(0.4, 2, 0.6, 1);
   box-shadow: 2px 0 20px rgba(0, 0, 0, 0.08);
-  position: relative;
-  z-index: 10;
-  height: 92.5vh;
-  max-height: 100dvh;
+  position: sticky; /* fijo relativo al viewport dentro del flujo */
+  top: 72px; /* debajo del TopNavBar */
+  z-index: 1;
   box-sizing: border-box;
-  overflow: hidden;
+  height: calc(100vh - 72px);
+  overflow: hidden; /* sin scroll interno */
   border-radius: 0;
   padding: 0;
 }

@@ -35,8 +35,8 @@ const handleSidebarToggle = (collapsed) => {
 
 .content-container {
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
 }
 
 .main-wrapper {

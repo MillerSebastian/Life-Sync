@@ -1257,41 +1257,48 @@ const listenToFriendships = () => {
 </script>
 
 <style scoped>
+.chat-page {
+  min-height: calc(100vh - 72px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 .columns {
-  height: 85vh;
-  margin-top: 20px;
+  height: calc(100vh - 90px);
+  margin-top: 12px;
   align-items: stretch;
+  overflow: hidden;
 }
 
 .box {
-  height: calc(100% - 80px);
-  overflow-y: auto;
+  height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 /* Estilo específico para el sidebar de amigos */
 .column.is-one-quarter .box {
-  height: calc(100% - 80px);
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 .column.is-one-quarter .box ul {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* Estilo específico para el área de chat */
 .column:not(.is-one-quarter) .box {
-  height: calc(100% - 80px);
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 .column:not(.is-one-quarter) .messages {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 ul {
@@ -1342,7 +1349,7 @@ li.is-active {
 
 .messages {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 10px;
   display: flex;
   flex-direction: column;

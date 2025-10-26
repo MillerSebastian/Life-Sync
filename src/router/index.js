@@ -63,6 +63,11 @@ const router = createRouter({
           component: () => import("../views/Chat.vue"),
         },
         {
+          path: "friends",
+          name: "friends",
+          component: () => import("../views/Friends.vue"),
+        },
+        {
           path: "profile",
           name: "profile",
           component: () => import("../views/Profile.vue"),
