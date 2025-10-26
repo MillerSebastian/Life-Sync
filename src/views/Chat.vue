@@ -281,7 +281,7 @@ import {
   onDisconnect,
 } from "firebase/database";
 import { db, auth, database } from "../../firebase";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import FloatingIcons from "../components/FloatingIcons.vue";
 
 // Interfaces actualizadas para reflejar la estructura de datos del registro
@@ -339,6 +339,17 @@ const localPendingMessages = ref<Message[]>([]);
 
 // Add this to your existing script setup
 const router = useRouter();
+const route = useRoute();
+
+// Preseleccionar usuario desde la ruta (?uid=...)
+const preselectFromRoute = () => {
+  const uid = (route.query.uid as string) || "";
+  if (!uid) return;
+  const target = users.value.find((u) => u.uid === uid);
+  if (target) {
+    selectUser(target);
+  }
+};
 
 // Variable global para saber con quién está chateando el usuario
 if (typeof window !== "undefined") {
@@ -1058,8 +1069,17 @@ watch(messages, (msgs) => {
   });
 });
 
-onMounted(() => {
-  loadUsers();
+// Observar cambios en la query uid para re-seleccionar
+watch(
+  () => route.query.uid,
+  () => {
+    preselectFromRoute();
+  }
+);
+
+onMounted(async () => {
+  await loadUsers();
+  preselectFromRoute();
 
   // Event listener para cerrar el modal cuando se hace clic fuera
   document.addEventListener("click", (event) => {

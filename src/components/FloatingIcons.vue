@@ -67,6 +67,7 @@ const props = defineProps({
         "meals",
         "chat",
         "iachat",
+        "friends",
         "login",
       ].includes(value),
   },
@@ -380,6 +381,10 @@ const props = defineProps({
   color: rgba(99, 102, 241, 0.4);
 }
 
+.floating-icons-container.friends .floating-icon {
+  color: rgba(30, 58, 138, 0.22);
+}
+
 .floating-icons-container.iachat .floating-icon {
   color: rgba(168, 85, 247, 0.4);
 }
@@ -468,6 +473,10 @@ const props = defineProps({
 
 #theme-dark .floating-icons-container.chat .floating-icon {
   color: rgba(99, 102, 241, 0.5);
+}
+
+#theme-dark .floating-icons-container.friends .floating-icon {
+  color: rgba(79, 140, 255, 0.4);
 }
 
 #theme-dark .floating-icons-container.iachat .floating-icon {
