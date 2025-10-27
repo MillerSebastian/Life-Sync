@@ -247,60 +247,16 @@
             <div class="control">
               <div class="select is-fullwidth">
                 <select v-model="transactionForm.category">
-                  <option
-                    v-if="transactionForm.type === 'income'"
-                    value="salary"
-                  >
-                    Salario
-                  </option>
-                  <option
-                    v-if="transactionForm.type === 'income'"
-                    value="freelance"
-                  >
-                    Freelance
-                  </option>
-                  <option
-                    v-if="transactionForm.type === 'income'"
-                    value="investment"
-                  >
-                    Inversión
-                  </option>
-                  <option
-                    v-if="transactionForm.type === 'expense'"
-                    value="food"
-                  >
-                    Comida
-                  </option>
-                  <option
-                    v-if="transactionForm.type === 'expense'"
-                    value="transport"
-                  >
-                    Transporte
-                  </option>
-                  <option
-                    v-if="transactionForm.type === 'expense'"
-                    value="entertainment"
-                  >
-                    Entretenimiento
-                  </option>
-                  <option
-                    v-if="transactionForm.type === 'expense'"
-                    value="health"
-                  >
-                    Salud
-                  </option>
-                  <option
-                    v-if="transactionForm.type === 'expense'"
-                    value="shopping"
-                  >
-                    Compras
-                  </option>
-                  <option
-                    v-if="transactionForm.type === 'expense'"
-                    value="bills"
-                  >
-                    Facturas
-                  </option>
+                  <template v-if="transactionForm.type === 'income'">
+                    <option value="salary">Salario</option>
+                    <option value="freelance">Freelance</option>
+                    <option value="investment">Inversión</option>
+                  </template>
+                  <template v-else>
+                    <option v-for="cat in budgetCategories" :key="cat.name" :value="cat.name">
+                      {{ cat.name }}
+                    </option>
+                  </template>
                 </select>
               </div>
             </div>
@@ -357,20 +313,41 @@
           <button class="delete" @click="showBudgetModal = false"></button>
         </header>
         <section class="modal-card-body">
-          <div
-            v-for="category in budgetCategories"
-            :key="category.name"
-            class="field"
-          >
-            <label class="label">{{ category.name }}</label>
+          <div class="field is-grouped">
+            <div class="control is-expanded">
+              <input v-model="newCategoryName" class="input" type="text" placeholder="Nueva categoría (ej. Mascotas)" />
+            </div>
+            <div class="control" style="width: 10rem;">
+              <input v-model.number="newCategoryLimit" class="input" type="number" step="0.01" placeholder="Límite" />
+            </div>
             <div class="control">
-              <input
-                v-model="category.limit"
-                class="input"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-              />
+              <button class="button is-link" @click="addBudgetCategory">Agregar</button>
+            </div>
+          </div>
+          <div class="budget-modal-scroll">
+            <div
+              v-for="category in budgetCategories"
+              :key="category.name"
+              class="field"
+            >
+              <label class="label">{{ category.name }}</label>
+              <div class="control is-flex is-align-items-center" style="gap: .75rem;">
+                <input
+                  v-model="category.limit"
+                  class="input"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+                <span :style="{display:'inline-block', width:'20px', height:'20px', borderRadius:'4px', background: category.color || '#ccc', border:'1px solid var(--border)'}"></span>
+                <button
+                  v-if="!isBuiltinName(category.name)"
+                  class="button is-danger is-light"
+                  @click="deleteBudgetCategory(category.name)"
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -403,7 +380,7 @@ import {
 } from "firebase/firestore";
 import Chart from "chart.js/auto";
 import { useRoute } from "vue-router";
-import { alertQuestion, alertSuccess } from "@/components/alert";
+import { alertQuestion, alertSuccess, alertError } from "@/components/alert";
 import FloatingIcons from "../components/FloatingIcons.vue";
 
 // Estado de la aplicación
@@ -458,13 +435,70 @@ onMounted(() => {
 
 // Presupuesto desde Firestore
 const budgetCategories = ref([
-  { name: "Comida", limit: 0, spent: 0 },
-  { name: "Transporte", limit: 0, spent: 0 },
-  { name: "Entretenimiento", limit: 0, spent: 0 },
-  { name: "Salud", limit: 0, spent: 0 },
-  { name: "Compras", limit: 0, spent: 0 },
-  { name: "Facturas", limit: 0, spent: 0 },
+  { name: "Comida", limit: 0, spent: 0, color: "#6366f1" },
+  { name: "Transporte", limit: 0, spent: 0, color: "#06d6a0" },
+  { name: "Entretenimiento", limit: 0, spent: 0, color: "#fbbf24" },
+  { name: "Salud", limit: 0, spent: 0, color: "#ef4444" },
+  { name: "Compras", limit: 0, spent: 0, color: "#8b5cf6" },
+  { name: "Facturas", limit: 0, spent: 0, color: "#10b981" },
 ]);
+
+// Nueva categoría (UI)
+const newCategoryName = ref("");
+const newCategoryLimit = ref(null);
+
+function randomColor() {
+  const hue = Math.floor(Math.random() * 360);
+  const sat = 70 + Math.floor(Math.random() * 20); // 70-90
+  const light = 55 + Math.floor(Math.random() * 15); // 55-70
+  // Convert HSL to hex quickly using canvas
+  const tmp = document.createElement("canvas");
+  const ctx = tmp.getContext("2d");
+  ctx.fillStyle = `hsl(${hue} ${sat}% ${light}%)`;
+  return ctx.fillStyle;
+}
+
+function addBudgetCategory() {
+  const name = (newCategoryName.value || "").trim();
+  if (!name) return;
+  if (budgetCategories.value.some((c) => c.name.toLowerCase() === name.toLowerCase())) return;
+  budgetCategories.value.push({
+    name,
+    limit: Number(newCategoryLimit.value) || 0,
+    spent: 0,
+    color: randomColor(),
+  });
+  newCategoryName.value = "";
+  newCategoryLimit.value = null;
+}
+
+function isBuiltinName(name) {
+  const builtins = [
+    "Comida",
+    "Transporte",
+    "Entretenimiento",
+    "Salud",
+    "Compras",
+    "Facturas",
+  ];
+  return builtins.some((b) => b.toLowerCase() === String(name || "").toLowerCase());
+}
+
+async function deleteBudgetCategory(name) {
+  if (!name || isBuiltinName(name)) return;
+  const res = await alertQuestion(`¿Eliminar la categoría "${name}"?`);
+  if (!res.isConfirmed) return;
+  budgetCategories.value = budgetCategories.value.filter(
+    (c) => (c.name || "").toLowerCase() !== String(name).toLowerCase()
+  );
+  try {
+    await saveBudget();
+  } catch (e) {
+    console.error(e);
+    alertError("No se pudo guardar el cambio de categorías");
+  }
+  nextTick(() => renderExpenseChart());
+}
 
 onMounted(async () => {
   // Leer presupuesto
@@ -478,9 +512,20 @@ onMounted(async () => {
     );
     if (userBudget) {
       const data = userBudget.data();
-      budgetCategories.value.forEach((cat) => {
-        if (data[cat.name]) cat.limit = data[cat.name];
-      });
+      if (Array.isArray(data.categories) && data.categories.length) {
+        // Usar categorías guardadas (con color)
+        budgetCategories.value = data.categories.map((c) => ({
+          name: c.name,
+          limit: Number(c.limit) || 0,
+          spent: 0,
+          color: c.color || randomColor(),
+        }));
+      } else {
+        // Compatibilidad: cargar límites por claves sueltas
+        budgetCategories.value.forEach((cat) => {
+          if (data[cat.name] !== undefined) cat.limit = Number(data[cat.name]) || 0;
+        });
+      }
     }
   }
   calcularWalletData();
@@ -494,6 +539,12 @@ const saveBudget = async () => {
 
   const data = {};
   budgetCategories.value.forEach((cat) => (data[cat.name] = Number(cat.limit)));
+  // Guardar arreglo con colores
+  const categoriesPayload = budgetCategories.value.map((c) => ({
+    name: c.name,
+    limit: Number(c.limit) || 0,
+    color: c.color || randomColor(),
+  }));
 
   try {
     const snapshot = await getDocs(collection(db, "budgets"));
@@ -503,14 +554,15 @@ const saveBudget = async () => {
 
     if (userBudget) {
       // Actualizar presupuesto existente
-      await updateDoc(doc(db, "budgets", userBudget.id), { ...data, userId });
+      await updateDoc(doc(db, "budgets", userBudget.id), { ...data, categories: categoriesPayload, userId });
     } else {
       // Crear nuevo presupuesto
-      await addDoc(collection(db, "budgets"), { ...data, userId });
+      await addDoc(collection(db, "budgets"), { ...data, categories: categoriesPayload, userId });
     }
 
     showBudgetModal.value = false;
     alertSuccess("Presupuesto guardado exitosamente");
+    nextTick(() => renderExpenseChart());
   } catch (error) {
     console.error("Error al guardar presupuesto:", error);
     alertError("Error al guardar el presupuesto");
@@ -627,12 +679,14 @@ function calcularWalletData() {
         expenses += Number(t.amount);
         // Sumar a la categoría
         const categoryName = getCategoryName(t.category);
-
-        const cat = budgetCategories.value.find((c) => c.name === categoryName);
-        if (cat) {
-          cat.spent += Number(t.amount);
-        } else {
+        const match = (c) => (c.name || "").toLowerCase() === (categoryName || "").toLowerCase();
+        let cat = budgetCategories.value.find(match);
+        if (!cat && categoryName) {
+          // categoría no listada aún: agregarla con límite 0 y color aleatorio
+          cat = { name: categoryName, limit: 0, spent: 0, color: randomColor() };
+          budgetCategories.value.push(cat);
         }
+        if (cat) cat.spent += Number(t.amount);
       }
     }
   });
@@ -676,7 +730,7 @@ function getCategoryName(category) {
     case "bills":
       return "Facturas";
     default:
-      return category.toLowerCase();
+      return category;
   }
 }
 
@@ -735,6 +789,14 @@ function renderExpenseChart() {
   if (chartInstance) chartInstance.destroy();
   const data = budgetCategories.value.map((cat) => cat.spent);
   const labels = budgetCategories.value.map((cat) => cat.name);
+  const colors = budgetCategories.value.map((cat, i) => cat.color || [
+    "#6366f1",
+    "#06d6a0",
+    "#fbbf24",
+    "#ef4444",
+    "#8b5cf6",
+    "#10b981",
+  ][i % 6]);
 
   const ctx = expenseChart.value.getContext("2d");
   chartInstance = new Chart(ctx, {
@@ -744,14 +806,7 @@ function renderExpenseChart() {
       datasets: [
         {
           data,
-          backgroundColor: [
-            "#6366f1",
-            "#06d6a0",
-            "#fbbf24",
-            "#ef4444",
-            "#8b5cf6",
-            "#10b981",
-          ],
+          backgroundColor: colors,
         },
       ],
     },
@@ -824,6 +879,12 @@ watch(
 <style scoped>
 .modal-card-body {
   width: 40em;
+}
+
+.budget-modal-scroll {
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 8px;
 }
 
 .select-month {
@@ -1103,6 +1164,9 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  max-height: 550px;
+  overflow-y: auto;
+  padding-right: 8px;
 }
 
 .budget-category {
