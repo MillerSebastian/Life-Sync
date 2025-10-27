@@ -49,6 +49,52 @@
         </router-link>
       </div>
     </nav>
+    <div class="sidebar-footer" :class="{ expanded: footerExpanded }">
+      <button class="footer-toggle" @click="toggleFooter">
+        <i class="bx" :class="footerExpanded ? 'bx-chevron-down' : 'bx-chevron-up'"></i>
+        <span v-if="!isCollapsed">Acerca de</span>
+      </button>
+      <div class="footer-content" v-show="footerExpanded">
+        <div class="footer-section">
+          <div class="footer-title" v-if="!isCollapsed">LifeSync Team</div>
+          
+        </div>
+        <div class="footer-actions">
+          <button class="footer-btn"><i class="bx bx-info-circle"></i><span v-if="!isCollapsed">Sobre</span></button>
+          <button class="footer-btn"><i class="bx bx-help-circle"></i><span v-if="!isCollapsed">Soporte</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="sidebar-global-footer"
+    v-show="footerExpanded"
+    :style="{
+      left: isCollapsed ? '70px' : '220px',
+      width: `calc(100% - ${isCollapsed ? 70 : 220}px)`
+    }"
+  >
+    <div class="sgf-inner">
+      <div class="sgf-left">
+        <span>Creado por&nbsp;<strong>Sebastian Rodelo</strong></span>
+        <span>|</span>
+        <a class="sgf-atomic" href="https://atomiclabs.up.railway.app/" target="_blank" rel="noopener noreferrer">con apoyo de&nbsp;<strong>AtomicLabs</strong></a>
+        <span>|</span>
+        <span>hecho con Vue, Tailwind y&nbsp;<i class='bx bx-heart'></i></span>
+        <span>|</span>
+        <span>v1.01 Beta</span>
+      </div>
+      <div class="sgf-actions">
+        <a href="https://github.com/MillerSebastian" class="sgf-btn" target="_blank" rel="noopener noreferrer">
+          <i class='bx bxl-github'></i>
+          <span>GitHub</span>
+        </a>
+        <a href="https://www.linkedin.com/in/sebastian-rodelo-139696266/" class="sgf-btn" target="_blank" rel="noopener noreferrer">
+          <i class='bx bxl-linkedin-square'></i>
+          <span>LinkedIn</span>
+        </a>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -58,6 +104,11 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 const isCollapsed = ref(false);
+const footerExpanded = ref(false);
+const links = ref({
+  github: "#",
+  linkedin: "#",
+});
 
 const emit = defineEmits(["toggle"]);
 
@@ -104,6 +155,10 @@ const menuItems = [
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value;
   emit("toggle", isCollapsed.value);
+};
+
+const toggleFooter = () => {
+  footerExpanded.value = !footerExpanded.value;
 };
 
 const logout = () => {
@@ -368,6 +423,78 @@ const isCommunity = computed(() => {
   background: var(--primary-dark);
 }
 
+.footer-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.footer-toggle:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.footer-content {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footer-title {
+  font-weight: 600;
+  color: #fff;
+}
+
+.footer-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.footer-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.footer-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.footer-btn i {
+  font-size: 18px;
+}
+
+.footer-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.sidebar.sidebar-collapsed .footer-actions {
+  grid-template-columns: repeat(3, 36px);
+}
+
 .logout-btn {
   width: 100%;
   display: flex;
@@ -410,6 +537,87 @@ const isCommunity = computed(() => {
 
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
+}
+
+/* Footer global desplegable */
+.sidebar-global-footer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -2px 12px var(--shadow);
+  z-index: 900;
+  transition: left 0.3s ease;
+}
+
+.sgf-inner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 0 16px;
+  height: 52px;
+  flex-wrap: wrap;
+}
+
+.sgf-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.sgf-left span,
+.sgf-left a {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+}
+
+.sgf-left i {
+  color: #ef4444;
+}
+
+.sgf-atomic {
+  color: #10b981;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sgf-atomic:hover {
+  text-decoration: underline;
+}
+
+.sgf-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.sgf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--background-secondary);
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.sgf-btn:hover {
+  filter: brightness(0.98);
+}
+
+.sgf-btn i {
+  font-size: 18px;
 }
 
 /* Responsive */
