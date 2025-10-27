@@ -84,7 +84,7 @@
                   @drop="dropTask($event, 'todo')"
                 >
                   <h4 class="title is-6 mb-3">Por Hacer</h4>
-                  <div class="task-list">
+                  <div class="task-list" :class="{ scrollable: todoTasks.length > 4 }">
                     <div
                       v-for="task in todoTasks"
                       :key="task.id"
@@ -116,7 +116,7 @@
                   @drop="dropTask($event, 'progress')"
                 >
                   <h4 class="title is-6 mb-3">En Progreso</h4>
-                  <div class="task-list">
+                  <div class="task-list" :class="{ scrollable: progressTasks.length > 4 }">
                     <div
                       v-for="task in progressTasks"
                       :key="task.id"
@@ -148,7 +148,7 @@
                   @drop="dropTask($event, 'completed')"
                 >
                   <h4 class="title is-6 mb-3">Completadas</h4>
-                  <div class="task-list">
+                  <div class="task-list" :class="{ scrollable: completedTasks.length > 4 }">
                     <div
                       v-for="task in completedTasks"
                       :key="task.id"
@@ -174,7 +174,7 @@
               <h3 class="title is-5 mb-0">Calendario</h3>
             </div>
             <div class="card-content">
-              <div class="calendar-events">
+              <div class="calendar-events" :class="{ scrollable: calendarEvents.length > 4 }">
                 <div
                   v-for="event in calendarEvents"
                   :key="event.id"
@@ -262,10 +262,10 @@
               <h3 class="title is-5 mb-0">Planificación de Comidas</h3>
             </div>
             <div class="card-content">
-              <div class="meal-planning">
+              <div class="meal-planning" :class="{ scrollable: Object.keys(mealData).length > 4 }">
                 <div class="meal-day" v-for="day in mealData" :key="day.day">
                   <h4 class="title is-6 mb-2">{{ day.day }}</h4>
-                  <div class="meal-items">
+                  <div class="meal-items" :class="{ scrollable: day.meals.length > 4 }">
                     <div
                       v-for="meal in day.meals"
                       :key="meal.type"
@@ -1049,6 +1049,12 @@ onMounted(async () => {
   gap: 0.75rem;
 }
 
+.task-list.scrollable {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 .task-item {
   background: var(--background);
   padding: 0.75rem;
@@ -1130,6 +1136,12 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.calendar-events.scrollable {
+  max-height: 330px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .event-item {
@@ -1271,6 +1283,12 @@ onMounted(async () => {
   gap: 1rem;
 }
 
+.meal-planning.scrollable {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 .meal-day {
   background: var(--background-secondary);
   padding: 1rem;
@@ -1281,6 +1299,12 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.meal-items.scrollable {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .meal-item {
