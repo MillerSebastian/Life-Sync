@@ -651,15 +651,26 @@ async function renderCharts() {
   const textColor = getTextColor();
 
   // Gráfico de actividad semanal con datos reales
-  const balanceMensual = [1200, 1500, 1100, 1700, 1600, 1800, 1400];
+  // Calcular balance neto por día (ingresos - gastos)
+  const netPerDay = [0, 0, 0, 0, 0, 0, 0];
+  allTransactions.docs.forEach((doc) => {
+    const transaction = doc.data();
+    if (transaction.userId !== getUserId()) return;
+    const d = new Date(transaction.date);
+    const idx = d.getDay();
+    if (idx < 0 || idx > 6) return;
+    const amt = Number(transaction.amount) || 0;
+    if (transaction.type === "income") netPerDay[idx] += amt;
+    if (transaction.type === "expense") netPerDay[idx] -= amt;
+  });
   lineChartInstance = new Chart(lineChart.value, {
     type: "line",
     data: {
       labels: ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
       datasets: [
         {
-          label: "Balance Mensual",
-          data: balanceMensual,
+          label: "Balance Neto (semana)",
+          data: netPerDay,
           fill: true,
           backgroundColor: "rgba(99, 102, 241, 0.1)",
           borderColor: "#6366f1",
@@ -706,7 +717,7 @@ async function renderCharts() {
           position: "left",
           title: {
             display: true,
-            text: "Balance Mensual y Eventos",
+            text: "Balance Neto y Eventos",
             color: textColor,
             font: { size: 16 },
           },
@@ -802,15 +813,45 @@ async function renderCharts() {
     },
   });
 
-  // Gráfico mensual con datos reales
-  const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul"];
-  const completedByMonth = [12, 8, 15, 10, 7, 14, 9];
-  const nutrients = {
-    calories: [2200, 2100, 2500, 2300, 2000, 2400, 2250],
-    protein: [90, 85, 100, 95, 80, 110, 88],
-    fat: [70, 65, 80, 75, 60, 85, 68],
-    carbs: [300, 280, 320, 310, 270, 330, 295],
-  };
+  // Gráfico mensual con datos reales (últimos 6 meses)
+  const monthNamesShort = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  const now = new Date();
+  const months = [];
+  const completedByMonth = [];
+  const caloriesByMonth = [];
+
+  function monthKey(d){ return `${d.getFullYear()}-${("0"+(d.getMonth()+1)).slice(-2)}`; }
+  const monthsKeys = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(`${monthNamesShort[d.getMonth()]} ${d.getFullYear()}`);
+    monthsKeys.push(monthKey(d));
+    completedByMonth.push(0);
+    caloriesByMonth.push(0);
+  }
+
+  // Tareas completadas por mes
+  const allTasksSnap = await getDocs(collection(db, "tasks"));
+  allTasksSnap.docs.forEach((docx) => {
+    const t = docx.data();
+    if (t.userId !== getUserId()) return;
+    if (t.status !== "completed" || !t.completedDate) return;
+    const d = new Date(t.completedDate);
+    const key = monthKey(new Date(d.getFullYear(), d.getMonth(), 1));
+    const idx = monthsKeys.indexOf(key);
+    if (idx >= 0) completedByMonth[idx] += 1;
+  });
+
+  // Calorías por mes
+  const allMealsMonthly = await getDocs(collection(db, "meals"));
+  allMealsMonthly.docs.forEach((docx) => {
+    const m = docx.data();
+    if (m.userId !== getUserId()) return;
+    const d = new Date(m.date);
+    const key = monthKey(new Date(d.getFullYear(), d.getMonth(), 1));
+    const idx = monthsKeys.indexOf(key);
+    if (idx >= 0) caloriesByMonth[idx] += Number(m.calories) || 0;
+  });
 
   monthlyChartInstance = new Chart(monthlyChart.value, {
     type: "bar",
@@ -827,36 +868,9 @@ async function renderCharts() {
         },
         {
           label: "Calorías",
-          data: nutrients.calories,
+          data: caloriesByMonth,
           borderColor: "#ef4444",
           backgroundColor: "rgba(239, 68, 68, 0.3)",
-          type: "line",
-          yAxisID: "y1",
-          fill: false,
-        },
-        {
-          label: "Proteínas",
-          data: nutrients.protein,
-          borderColor: "#06d6a0",
-          backgroundColor: "rgba(6, 214, 160, 0.3)",
-          type: "line",
-          yAxisID: "y1",
-          fill: false,
-        },
-        {
-          label: "Grasas",
-          data: nutrients.fat,
-          borderColor: "#fbbf24",
-          backgroundColor: "rgba(251, 191, 36, 0.3)",
-          type: "line",
-          yAxisID: "y1",
-          fill: false,
-        },
-        {
-          label: "Carbohidratos",
-          data: nutrients.carbs,
-          borderColor: "#8b5cf6",
-          backgroundColor: "rgba(139, 92, 246, 0.3)",
           type: "line",
           yAxisID: "y1",
           fill: false,
@@ -897,7 +911,7 @@ async function renderCharts() {
           position: "right",
           title: {
             display: true,
-            text: "Nutrientes",
+            text: "Calorías",
             color: textColor,
             font: { size: 16 },
           },
