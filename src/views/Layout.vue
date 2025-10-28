@@ -12,6 +12,9 @@
         </div>
       </main>
     </div>
+    
+    <!-- Reproductor flotante global -->
+    <FloatingMusicPlayer />
   </div>
 </template>
 
@@ -19,6 +22,7 @@
 import { ref } from "vue";
 import Sidebar from "../components/Sidebar.vue";
 import TopNavBar from "../components/TopNavBar.vue";
+import FloatingMusicPlayer from "../components/FloatingMusicPlayer.vue";
 
 const isSidebarCollapsed = ref(false);
 

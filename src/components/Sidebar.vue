@@ -139,6 +139,11 @@ const menuItems = [
     icon: "bx bx-restaurant",
   },
   {
+    name: "Music",
+    path: "/music",
+    icon: "bx bx-music",
+  },
+  {
     path: "chatIA",
     name: "Lisy IA",
     icon: "bx bx-chat",

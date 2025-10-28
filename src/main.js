@@ -7,6 +7,7 @@ import "bulma/css/bulma.css";
 
 import "./assets/main.css";
 import { useSearchStore } from "@/stores/search";
+import { useMusicStore } from "@/stores/music";
 
 const app = createApp(App);
 
@@ -21,5 +22,9 @@ if (typeof document !== "undefined") {
 // Llamar a syncAll al iniciar la app para mantener el buscador funcionando tras recargar
 const searchStore = useSearchStore();
 searchStore.syncAll();
+
+// Cargar playlist de música desde localStorage
+const musicStore = useMusicStore();
+musicStore.loadPlaylist();
 
 app.mount("#app");
